@@ -1,4 +1,4 @@
-// Prisma Schema for SkillBridge (SIH26044)
+// Prisma Schema for SkillBridge (SIH26044) — Extended v2
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
@@ -38,9 +38,9 @@ model InstitutionProfile {
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   aisheCode          String   @unique
   name               String
-  type               String   // 'CENTRAL_UNIVERSITY', 'STATE_UNIVERSITY', 'AUTONOMOUS', 'AYUSH_INSTITUTE'
-  category           String?  // 'Ayush & Allied Sciences', 'Engineering & Technology', 'Multidisciplinary'
-  accreditationGrade String?  // 'NAAC A++', 'NIRF Top 50', 'NABH'
+  type               String   // 'CENTRAL_UNIVERSITY', 'STATE_UNIVERSITY', 'AUTONOMOUS', 'DEEMED', 'PRIVATE'
+  category           String?
+  accreditationGrade String?
   website            String?
   city               String
   state              String
@@ -54,24 +54,54 @@ model InstitutionProfile {
 }
 
 model StudentProfile {
-  id              String             @id @default(uuid())
-  userId          String             @unique
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String              @id @default(uuid())
+  userId          String              @unique
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionId   String?
   institution     InstitutionProfile? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
-  department      String             // e.g. 'Dravyaguna Vigyana', 'Biotechnology', 'Computer Science'
-  degree          String             // e.g. 'BAMS', 'MD Ayurveda', 'B.Tech'
+
+  // Academic Identity (set at registration, immutable core)
+  department      String
+  degree          String
   graduationYear  Int
   rollNumber      String?
+  admissionYear   Int?
+  currentYear     String?            // '1st Year', '2nd Year', etc.
+  currentSemester Int?
   cgpa            Float              @default(8.0)
   activeBacklogs  Int                @default(0)
-  readinessScore  Int                @default(75) // 0 - 100 calculated metric
+  dateOfBirth     String?
+  gender          String?
+
+  // Professional Profile (editable anytime)
+  headline        String?            // "Aspiring Full Stack Developer | B.Tech CSE 2026"
+  summary         String?            // About/Bio
+  careerInterests String?            // JSON array stored as string e.g. '["Web Dev","AI/ML"]'
+  preferredRoles  String?            // JSON array
+  preferredIndustries String?        // JSON array
+  preferredLocations  String?        // JSON array
+  internshipPref  String?            // 'REMOTE', 'ONSITE', 'HYBRID', 'ANY'
+  employmentPref  String?            // 'FULL_TIME', 'PART_TIME', 'CONTRACT', 'ANY'
+
+  // Links
   resumeUrl       String?
   portfolioUrl    String?
   githubUrl       String?
   linkedinUrl     String?
+  leetcodeUrl     String?
+  hackerrankUrl   String?
+  codechefUrl     String?
+  codeforcesUrl   String?
+  kaggleUrl       String?
+
+  // Bio legacy
   bio             String?
+
+  // Computed/cached metrics
+  readinessScore  Int                @default(0)
+  profileCompletion Int              @default(20)
   placementStatus String             @default("SEEKING") // 'SEEKING', 'INTERNING', 'PLACED'
+
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 
@@ -80,24 +110,28 @@ model StudentProfile {
   applications    Application[]
   certifications  StudentCertification[]
   projects        StudentProject[]
+  achievements    Achievement[]
+  learningProgress LearningProgress[]
+  eventRegistrations EventRegistration[]
+  profileVisibility ProfileVisibility?
 }
 
 model FacultyProfile {
-  id               String             @id @default(uuid())
-  userId           String             @unique
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String              @id @default(uuid())
+  userId           String              @unique
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionId    String?
   institution      InstitutionProfile? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
   department       String
-  designation      String             // 'Associate Professor', 'Assistant Professor', 'Professor & HOD'
-  experienceYears  Int                @default(5)
+  designation      String
+  experienceYears  Int                 @default(5)
   specialization   String?
   researchDomains  String?
-  isTpoOfficer     Boolean            @default(false)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  isTpoOfficer     Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
-  applications     Application[]      // For Faculty FDP / Fellowships
+  applications     Application[]
 }
 
 model CompanyProfile {
@@ -107,8 +141,8 @@ model CompanyProfile {
   companyName   String
   cinNumber     String?         @unique
   gstin         String?
-  domain        String          // 'AYUSH_PHARMA', 'HERBAL_RESEARCH', 'HEALTH_TECH', 'BIOTECH', 'IT_SERVICES'
-  size          String          @default("ENTERPRISE") // 'STARTUP', 'MID_TIER', 'ENTERPRISE'
+  domain        String
+  size          String          @default("ENTERPRISE")
   website       String?
   logoUrl       String?
   description   String?
@@ -118,7 +152,7 @@ model CompanyProfile {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  opportunities Opportunity[]
+  opportunities  Opportunity[]
   collaborations Collaboration[]
 }
 
@@ -130,34 +164,101 @@ model SkillCategory {
 }
 
 model Skill {
-  id               String             @id @default(uuid())
+  id               String              @id @default(uuid())
   categoryId       Int
-  category         SkillCategory      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  code             String             @unique
+  category         SkillCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code             String              @unique
   name             String
   description      String?
-  demandWeight     Float              @default(1.0)
-  createdAt        DateTime           @default(now())
+  demandWeight     Float               @default(1.0)
+  createdAt        DateTime            @default(now())
 
   studentSkills    StudentSkill[]
   opportunitySkills OpportunitySkill[]
   assessments      SkillAssessment[]
+  learningResources LearningResource[]
   bridgeCourses    BridgeCourse[]
 }
 
 model StudentSkill {
-  id                 String         @id @default(uuid())
-  studentId          String
-  student            StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  skillId            String
-  skill              Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  proficiencyLevel   String         @default("BEGINNER") // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'
-  proficiencyScore   Int            @default(60) // 1-100
-  verificationSource String         @default("SELF_REPORTED") // 'SELF_REPORTED', 'FACULTY_VERIFIED', 'ASSESSMENT_TESTED'
-  verifiedAt         DateTime?
-  updatedAt          DateTime       @updatedAt
+  id                  String         @id @default(uuid())
+  studentId           String
+  student             StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillId             String
+  skill               Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  proficiencyLevel    String         @default("BEGINNER") // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'
+  proficiencyScore    Int            @default(60) // 1-100
+  verificationLevel   String         @default("SELF_DECLARED")
+  // 'SELF_DECLARED', 'ASSESSMENT_VERIFIED', 'PROJECT_VERIFIED', 'CERTIFICATION_VERIFIED', 'INDUSTRY_VERIFIED'
+  verificationSource  String         @default("SELF_REPORTED") // legacy
+
+  // Certificate-based verification (new)
+  verificationStatus  String         @default("PENDING")
+  // 'PENDING' | 'VERIFIED' | 'REJECTED'
+  certificateName     String?
+  certificateFile     String?        // relative path: /uploads/certificates/<studentId>/<filename>
+  issuingOrganization String?
+  issueDate           String?
+  certificateId       String?        // Credential / Certificate ID
+  credentialUrl       String?
+  rejectionReason     String?
+  uploadedAt          DateTime?
+  verifiedAt          DateTime?
+  updatedAt           DateTime       @updatedAt
 
   @@unique([studentId, skillId])
+}
+
+model StudentCertification {
+  id           String         @id @default(uuid())
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title        String
+  issuingBody  String
+  issueDate    DateTime
+  expiryDate   DateTime?
+  credentialId String?
+  credentialUrl String?
+  fileUrl      String?
+  relatedSkills String?       // JSON array of skill names
+  isVerified   Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Achievement {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title       String
+  type        String         // 'HACKATHON', 'COMPETITION', 'ACADEMIC', 'AWARD', 'PUBLICATION', 'RESEARCH', 'SPORTS', 'LEADERSHIP', 'WORKSHOP', 'CONFERENCE', 'OTHER'
+  organization String?
+  date        DateTime
+  description String?
+  fileUrl     String?
+  relatedSkills String?      // JSON array
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model StudentProject {
+  id             String         @id @default(uuid())
+  studentId      String
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  category       String?        // 'WEB', 'MOBILE', 'AI_ML', 'DATA', 'CLOUD', 'SECURITY', 'OTHER'
+  technologies   String         // JSON array or comma-separated
+  skillsDemonstrated String?    // JSON array of skill names
+  githubUrl      String?
+  liveUrl        String?
+  imageUrl       String?
+  teamSize       Int            @default(1)
+  role           String?        // 'Lead Developer', 'Backend Developer', etc.
+  durationMonths Int?
+  projectUrl     String?        // legacy alias for liveUrl
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model SkillAssessment {
@@ -166,11 +267,11 @@ model SkillAssessment {
   skill           Skill                @relation(fields: [skillId], references: [id], onDelete: Cascade)
   title           String
   description     String?
-  category        String               @default("TECHNICAL") // 'TECHNICAL', 'SOFT_SKILL'
+  category        String               @default("TECHNICAL")
   totalQuestions  Int                  @default(5)
   passingScore    Int                  @default(60)
   durationMinutes Int                  @default(15)
-  difficulty      String               @default("INTERMEDIATE") // 'EASY', 'INTERMEDIATE', 'HARD'
+  difficulty      String               @default("INTERMEDIATE")
   createdAt       DateTime             @default(now())
 
   questions       AssessmentQuestion[]
@@ -186,7 +287,7 @@ model AssessmentQuestion {
   optionB       String
   optionC       String
   optionD       String
-  correctAnswer String          // 'A', 'B', 'C', 'D'
+  correctAnswer String
   explanation   String?
 }
 
@@ -201,17 +302,101 @@ model AssessmentAttempt {
   completedAt     DateTime        @default(now())
 }
 
+model LearningResource {
+  id             String   @id @default(uuid())
+  skillId        String?
+  skill          Skill?   @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  title          String
+  provider       String   // 'Swayam / NPTEL', 'Coursera', 'Udemy', 'YouTube', etc.
+  url            String
+  estimatedHours Int      @default(20)
+  cost           String   @default("FREE")   // 'FREE', 'PAID'
+  rating         Float    @default(4.5)
+  difficulty     String   @default("BEGINNER") // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'
+  targetRole     String?  // 'Full Stack Developer', etc. — for roadmap grouping
+  roadmapOrder   Int?     // order within a role roadmap
+  isRoadmapItem  Boolean  @default(false)
+  whyRecommended String?
+  createdAt      DateTime @default(now())
+
+  learningProgress LearningProgress[]
+}
+
+// Legacy alias kept for backwards compatibility with existing seed
 model BridgeCourse {
   id             String   @id @default(uuid())
   skillId        String
   skill          Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
   title          String
-  provider       String   // 'Swayam / NPTEL', 'Coursera', 'CCRAS e-Learning', 'Ayush Council'
+  provider       String
   url            String
   estimatedHours Int      @default(20)
   cost           String   @default("FREE")
   rating         Float    @default(4.7)
   createdAt      DateTime @default(now())
+}
+
+model LearningProgress {
+  id          String           @id @default(uuid())
+  studentId   String
+  student     StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  resourceId  String
+  resource    LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  status      String           @default("NOT_STARTED") // 'NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'
+  startedAt   DateTime?
+  completedAt DateTime?
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([studentId, resourceId])
+}
+
+model Event {
+  id                  String              @id @default(uuid())
+  name                String
+  organizer           String
+  type                String              // 'HACKATHON', 'WORKSHOP', 'WEBINAR', 'CONFERENCE', 'COMPETITION', 'CAREER_FAIR', 'CAMPUS_DRIVE', 'OTHER'
+  mode                String              @default("ONLINE") // 'ONLINE', 'OFFLINE', 'HYBRID'
+  level               String              @default("ALL")    // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL'
+  date                DateTime
+  endDate             DateTime?
+  time                String?            // e.g. "10:00 AM IST"
+  location            String?
+  registrationDeadline DateTime?
+  topics              String?            // JSON array of skill/topic names
+  eligibility         String?
+  registrationUrl     String?
+  imageUrl            String?
+  description         String?
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  registrations       EventRegistration[]
+}
+
+model EventRegistration {
+  id         String         @id @default(uuid())
+  eventId    String
+  event      Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  registeredAt DateTime     @default(now())
+
+  @@unique([eventId, studentId])
+}
+
+model ProfileVisibility {
+  id                String         @id @default(uuid())
+  studentId         String         @unique
+  student           StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  profilePublic     Boolean        @default(true)   // Basic profile visible to industry
+  skillsPublic      Boolean        @default(true)
+  projectsPublic    Boolean        @default(true)
+  certificationsPublic Boolean     @default(true)
+  academicInfoPublic Boolean       @default(false)  // Institution-only by default
+  phonePrivate      Boolean        @default(true)   // Always private
+  emailPublic       Boolean        @default(false)
+  updatedAt         DateTime       @updatedAt
 }
 
 model Opportunity {
@@ -220,17 +405,18 @@ model Opportunity {
   company          CompanyProfile     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   title            String
   type             String             // 'INTERNSHIP', 'JOB', 'FACULTY_FDP', 'TRAINING', 'LIVE_PROJECT'
-  workMode         String             @default("ONSITE") // 'ONSITE', 'REMOTE', 'HYBRID'
+  workMode         String             @default("ONSITE")
   description      String
   responsibilities String?
   eligibility      String?
   minCgpa          Float              @default(6.5)
-  stipendOrSalary  String             // e.g. '₹35,000 / month' or '₹8.5 LPA'
+  stipendOrSalary  String
   vacancies        Int                @default(2)
   durationMonths   Int?
   location         String
   deadline         DateTime
-  status           String             @default("OPEN") // 'OPEN', 'CLOSED'
+  driveDate        DateTime?
+  status           String             @default("OPEN")
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -244,7 +430,7 @@ model OpportunitySkill {
   opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
   skillId       String
   skill         Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  criticality   String      @default("MANDATORY") // 'MANDATORY', 'PREFERRED', 'OPTIONAL'
+  criticality   String      @default("MANDATORY")
   weightage     Int         @default(25)
 
   @@unique([opportunityId, skillId])
@@ -261,7 +447,8 @@ model Application {
   coverLetter    String?
   resumeUrl      String?
   matchScore     Float           @default(70.0)
-  status         String          @default("APPLIED") // 'APPLIED', 'REVIEWING', 'SHORTLISTED', 'INTERVIEW', 'SELECTED', 'REJECTED'
+  status         String          @default("APPLIED")
+  // 'APPLIED', 'REVIEWING', 'SHORTLISTED', 'INTERVIEW', 'SELECTED', 'REJECTED', 'WITHDRAWN'
   appliedAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -272,13 +459,13 @@ model Interview {
   id            String      @id @default(uuid())
   applicationId String
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  roundTitle    String      // 'Technical Evaluation', 'Clinical Viva', 'HR Round'
+  roundTitle    String
   scheduledAt   DateTime
   durationMins  Int         @default(45)
   meetingLink   String?
   interviewer   String?
   notes         String?
-  status        String      @default("SCHEDULED") // 'SCHEDULED', 'COMPLETED', 'CANCELLED'
+  status        String      @default("SCHEDULED")
   createdAt     DateTime    @default(now())
 }
 
@@ -289,39 +476,13 @@ model Collaboration {
   companyId     String
   company       CompanyProfile     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   title         String
-  type          String             // 'MOU', 'JOINT_RESEARCH', 'GUEST_LECTURE', 'LAB_SPONSORSHIP'
+  type          String
   scope         String
   budget        Float              @default(0)
-  quota         Int                @default(10) // e.g. annual internship quota
-  status        String             @default("ACTIVE") // 'REQUESTED', 'ACTIVE', 'COMPLETED'
+  quota         Int                @default(10)
+  status        String             @default("ACTIVE")
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-}
-
-model StudentCertification {
-  id          String         @id @default(uuid())
-  studentId   String
-  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  title       String
-  issuingBody String
-  issueDate   DateTime
-  expiryDate  DateTime?
-  credentialId String?
-  verifyUrl   String?
-  isVerified  Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-}
-
-model StudentProject {
-  id          String         @id @default(uuid())
-  studentId   String
-  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  title       String
-  description String
-  technologies String
-  projectUrl  String?
-  githubUrl   String?
-  createdAt   DateTime       @default(now())
 }
 
 model Notification {
@@ -332,7 +493,8 @@ model Notification {
   message   String
   link      String?
   isRead    Boolean  @default(false)
-  type      String   @default("INFO") // 'APPLICATION', 'INTERVIEW', 'MATCH', 'INFO'
+  type      String   @default("INFO")
+  // 'APPLICATION', 'INTERVIEW', 'MATCH', 'INFO', 'SKILL_GAP', 'EVENT', 'CERTIFICATION', 'LEARNING'
   createdAt DateTime @default(now())
 }
 
