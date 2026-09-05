@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { REAL_TECH_EVENTS } from "@/lib/techEvents";
 
-// GET /api/student/events
+// GET /api/student/events — returns curated real tech events with filtering
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -11,69 +11,51 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type");
-    const mode = searchParams.get("mode");
-    const level = searchParams.get("level");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "12");
+    const type    = searchParams.get("type");
+    const mode    = searchParams.get("mode");
+    const level   = searchParams.get("level");
+    const search  = searchParams.get("q") || "";
 
-    const where: any = {
-      isActive: true,
-      date: { gte: new Date() },
-    };
-    if (type && type !== "ALL") where.type = type;
-    if (mode && mode !== "ALL") where.mode = mode;
-    if (level && level !== "ALL") where.level = level;
+    const now = new Date();
 
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        where,
-        orderBy: { date: "asc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          registrations: session.role === "STUDENT" ? {
-            where: { student: { userId: session.id } },
-            select: { id: true },
-          } : false,
-        },
-      }),
-      prisma.event.count({ where }),
-    ]);
+    let events = REAL_TECH_EVENTS.filter((ev) => {
+      // Only show active, upcoming events
+      if (!ev.isActive) return false;
+      const eventEnd = ev.endDate ? new Date(ev.endDate) : new Date(ev.date);
+      if (eventEnd < now) return false;
 
-    return NextResponse.json({ events, total, page, pages: Math.ceil(total / limit) });
+      // Type filter
+      if (type && type !== "ALL" && ev.type !== type) return false;
+      // Mode filter
+      if (mode && mode !== "ALL" && ev.mode !== mode) return false;
+      // Level filter
+      if (level && level !== "ALL" && ev.level !== level && ev.level !== "ALL") return false;
+
+      // Search filter
+      if (search) {
+        const q = search.toLowerCase();
+        const searchable = [
+          ev.name,
+          ev.organizer,
+          ev.location ?? "",
+          ...(ev.topics ?? []),
+        ].join(" ").toLowerCase();
+        if (!searchable.includes(q)) return false;
+      }
+
+      return true;
+    });
+
+    // Sort by date ascending
+    events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return NextResponse.json({ events, total: events.length });
   } catch (err) {
     console.error("[events GET]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// POST /api/student/events — register for event
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getSession();
-    if (!session || session.role !== "STUDENT") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { eventId } = body;
-    if (!eventId) return NextResponse.json({ error: "eventId required" }, { status: 400 });
-
-    const student = await prisma.studentProfile.findUnique({
-      where: { userId: session.id }, select: { id: true },
-    });
-    if (!student) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-
-    const registration = await prisma.eventRegistration.upsert({
-      where: { eventId_studentId: { eventId, studentId: student.id } },
-      create: { eventId, studentId: student.id },
-      update: {},
-    });
-
-    return NextResponse.json({ registration }, { status: 201 });
-  } catch (err) {
-    console.error("[events POST]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
+// POST is intentionally removed — SkillBridge does NOT register students for external events.
+// Registration happens on the official event website via the registrationUrl.
+// The "Save Event" (interested) feature is handled client-side only.

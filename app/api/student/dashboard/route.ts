@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const opportunities = await prisma.opportunity.findMany({
       where: { status: "OPEN" },
       include: {
-        company: { select: { companyName: true, logoUrl: true, domain: true } },
+        company: { select: { companyName: true, logoUrl: true, website: true } },
         skills: { include: { skill: true } },
       },
       orderBy: { deadline: "asc" },
@@ -55,14 +55,29 @@ export async function GET(req: NextRequest) {
     const studentSkillNames = new Set(
       student.skills.map((ss) => ss.skill.name.toLowerCase())
     );
+    // Per-company official careers URL map
+    const CAREERS_URL_MAP: Record<string, string> = {
+      "tcs.com":               "https://www.tcs.com/careers",
+      "infosys.com":           "https://career.infosys.com",
+      "microsoft.com":         "https://careers.microsoft.com/students",
+      "careers.google.com":    "https://careers.google.com/students",
+      "amazon.jobs":           "https://www.amazon.jobs/student-programs",
+      "flipkart.com":          "https://www.flipkartcareers.com",
+    };
+
     const oppWithMatch = opportunities.map((opp) => {
       const totalSkills = opp.skills.length;
-      if (totalSkills === 0) return { ...opp, matchScore: 95 };
-      const matched = opp.skills.filter((os) =>
-        studentSkillNames.has(os.skill.name.toLowerCase())
-      ).length;
-      const matchScore = Math.round((matched / totalSkills) * 100);
-      return { ...opp, matchScore };
+      const matchScore = totalSkills === 0 ? 95 : Math.round(
+        (opp.skills.filter((os) => studentSkillNames.has(os.skill.name.toLowerCase())).length / totalSkills) * 100
+      );
+      // Build official external applyUrl from company website
+      const website = opp.company?.website?.trim() || "";
+      const websiteHost = website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      const applyUrl =
+        CAREERS_URL_MAP[websiteHost] ??
+        (website ? `${website.replace(/\/$/, "")}/careers` :
+          `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(opp.title)}`);
+      return { ...opp, matchScore, applyUrl };
     });
 
     // Sort by match score desc

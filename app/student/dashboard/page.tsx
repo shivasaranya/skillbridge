@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  BarChart3, Briefcase, BookOpen, CalendarDays, CheckCircle2,
+  BarChart3, Briefcase, BookOpen, CalendarDays,
   AlertTriangle, ArrowRight, Sparkles, TrendingUp, Target,
-  Clock, MapPin, DollarSign, Loader2, RefreshCw, ChevronRight,
+  Clock, MapPin, DollarSign, RefreshCw, ChevronRight,
   Award, Layers, Zap, Shield
 } from "lucide-react";
 
@@ -29,8 +29,7 @@ export default function StudentDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [applying, setApplying] = useState<string | null>(null);
-  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -40,11 +39,7 @@ export default function StudentDashboard() {
       if (!res.ok) throw new Error("Failed to load");
       const json = await res.json();
       setData(json);
-      // Track already-applied IDs
-      const applied = new Set<string>(
-        (json.student?.applications || []).map((a: any) => a.opportunityId as string)
-      );
-      setAppliedIds(applied);
+
     } catch (e) {
       setError("Couldn't load your dashboard. Please try again.");
     } finally {
@@ -54,18 +49,8 @@ export default function StudentDashboard() {
 
   useEffect(() => { loadDashboard(); }, []);
 
-  const handleQuickApply = async (oppId: string) => {
-    setApplying(oppId);
-    try {
-      await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ opportunityId: oppId, coverLetter: "I am interested in this opportunity." }),
-      });
-      setAppliedIds(prev => new Set<string>(Array.from(prev).concat(oppId)));
-    } finally {
-      setApplying(null);
-    }
+  const handleQuickApply = (applyUrl: string) => {
+    window.open(applyUrl, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -321,16 +306,10 @@ export default function StudentDashboard() {
                 <div className="flex items-center justify-between border-t border-slate-100 pt-3">
                   <span className="text-xs font-bold text-slate-800">{opp.stipendOrSalary}</span>
                   <button
-                    onClick={() => !appliedIds.has(opp.id) && handleQuickApply(opp.id)}
-                    disabled={applying === opp.id || appliedIds.has(opp.id)}
-                    className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                      appliedIds.has(opp.id)
-                        ? "bg-emerald-100 text-emerald-700 cursor-default"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
+                    onClick={() => handleQuickApply(opp.applyUrl)}
+                    className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition bg-blue-600 text-white hover:bg-blue-700"
                   >
-                    {applying === opp.id ? <Loader2 size={12} className="animate-spin" /> : null}
-                    {appliedIds.has(opp.id) ? "✓ Applied" : "Quick Apply"}
+                    Quick Apply
                   </button>
                 </div>
               </div>
