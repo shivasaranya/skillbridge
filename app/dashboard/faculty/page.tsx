@@ -21,7 +21,6 @@ import {
 export default function FacultyDashboard() {
   const [facultyOpportunities, setFacultyOpportunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [appliedFdp, setAppliedFdp] = useState(false);
 
   useEffect(() => {
     fetch("/api/opportunities?type=FACULTY_FDP")
@@ -31,20 +30,10 @@ export default function FacultyDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleApplyFdp = async (oppId: string) => {
-    try {
-      await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          opportunityId: oppId,
-          coverLetter: "Faculty sabbatical application for phytochemical laboratory immersion.",
-        }),
-      });
-      setAppliedFdp(true);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleApplyFdp = (opp: any) => {
+    // Open the official application page for the FDP opportunity
+    const url = opp.applyUrl || opp.company?.website || "https://www.ncs.gov.in/Pages/Search.aspx";
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -230,18 +219,13 @@ export default function FacultyDashboard() {
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span className="text-slate-500">{opp.location}</span>
-                {appliedFdp ? (
-                  <span className="text-emerald-600 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4" /> Applied
-                  </span>
-                ) : (
                   <button
-                    onClick={() => handleApplyFdp(opp.id)}
-                    className="rounded-lg bg-emerald-600 text-white font-semibold px-3.5 py-1.5 hover:bg-emerald-700 transition"
+                    onClick={() => handleApplyFdp(opp)}
+                    className="rounded-lg bg-emerald-600 text-white font-semibold px-3.5 py-1.5 hover:bg-emerald-700 transition flex items-center gap-1.5"
                   >
                     Apply for Immersion
+                    <ExternalLink className="h-3.5 w-3.5" />
                   </button>
-                )}
               </div>
             </div>
           ))}
