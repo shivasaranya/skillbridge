@@ -5,13 +5,43 @@ import { hashPassword, signSessionToken, COOKIE_NAME } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, firstName, lastName, phone, role, ...roleData } = body;
+    const { email, password, phone, role, ...roleData } = body;
 
-    if (!email || !password || !firstName || !lastName || !role) {
+    const normalizedRole = (role || "").trim().toUpperCase();
+
+    if (!email || !password || !normalizedRole) {
       return NextResponse.json(
-        { error: "Please fill in all mandatory fields." },
+        { error: "Email, password, and domain role are required." },
         { status: 400 }
       );
+    }
+
+    // Determine First and Last Names with robust handling for fullName / contactPerson
+    let firstName = (body.firstName || "").trim();
+    let lastName = (body.lastName || "").trim();
+
+    if (!firstName && roleData.fullName) {
+      const parts = roleData.fullName.trim().split(/\s+/);
+      firstName = parts[0] || "User";
+      lastName = parts.slice(1).join(" ") || "";
+    } else if (!firstName && roleData.contactPersonName) {
+      const parts = roleData.contactPersonName.trim().split(/\s+/);
+      firstName = parts[0] || "Partner";
+      lastName = parts.slice(1).join(" ") || "";
+    } else if (!firstName && roleData.contactPerson) {
+      const parts = roleData.contactPerson.trim().split(/\s+/);
+      firstName = parts[0] || "Partner";
+      lastName = parts.slice(1).join(" ") || "";
+    } else if (!firstName && roleData.companyName) {
+      firstName = roleData.companyName.trim();
+      lastName = "Representative";
+    }
+
+    if (!firstName) {
+      firstName = "Member";
+    }
+    if (!lastName) {
+      lastName = "";
     }
 
     const existing = await prisma.user.findUnique({
@@ -20,9 +50,22 @@ export async function POST(req: Request) {
 
     if (existing) {
       return NextResponse.json(
-        { error: "An account with this email address already exists." },
+        { error: "An account with this email address already exists. Please Sign In." },
         { status: 400 }
       );
+    }
+
+    // Parse location if provided as "City, State"
+    let parsedCity = (roleData.city || "").trim();
+    let parsedState = (roleData.state || "").trim();
+    if (roleData.location && typeof roleData.location === "string") {
+      const locParts = roleData.location.split(",").map((s: string) => s.trim());
+      if (locParts.length > 1) {
+        parsedCity = locParts[0] || parsedCity;
+        parsedState = locParts.slice(1).join(", ") || parsedState;
+      } else if (locParts[0]) {
+        parsedCity = locParts[0];
+      }
     }
 
     const passwordHash = await hashPassword(password);
@@ -34,58 +77,71 @@ export async function POST(req: Request) {
         passwordHash,
         firstName,
         lastName,
-        phone,
-        role,
+        phone: phone || null,
+        role: normalizedRole,
       },
     });
 
-    // Create Role Profile
-    if (role === "STUDENT") {
+    // Create Domain Specific Profile
+    if (normalizedRole === "STUDENT") {
       await prisma.studentProfile.create({
         data: {
           userId: user.id,
-          department: roleData.department || "Allied Sciences",
+          collegeName: roleData.college || roleData.collegeName || roleData.institution || null,
+          department: roleData.department || roleData.branch || "Allied Sciences",
           degree: roleData.degree || "Undergraduate Degree",
           graduationYear: parseInt(roleData.graduationYear) || 2026,
           rollNumber: roleData.rollNumber || null,
           cgpa: parseFloat(roleData.cgpa) || 8.0,
-          readinessScore: 70,
+          readinessScore: 75,
         },
       });
-    } else if (role === "FACULTY") {
+    } else if (normalizedRole === "FACULTY") {
       await prisma.facultyProfile.create({
         data: {
           userId: user.id,
-          department: roleData.department || "Academic Department",
+          institutionName: roleData.institution || roleData.institutionName || null,
+          department: roleData.department || "Academic Faculty",
           designation: roleData.designation || "Assistant Professor",
-          experienceYears: parseInt(roleData.experienceYears) || 3,
-          specialization: roleData.specialization || "Higher Education & Research",
+          experienceYears: parseInt(roleData.experienceYears) || 5,
+          specialization: roleData.areasOfExpertise || roleData.specialization || "Higher Education & Research",
+          researchDomains: roleData.areasOfExpertise || roleData.researchDomains || null,
         },
       });
-    } else if (role === "INDUSTRY") {
+    } else if (normalizedRole === "INDUSTRY") {
       await prisma.companyProfile.create({
         data: {
           userId: user.id,
-          companyName: roleData.companyName || `${firstName}'s Enterprise`,
-          domain: roleData.domain || "HEALTH_TECH",
-          website: roleData.website || null,
+          companyName: roleData.companyName || roleData.organizationName || `${firstName}'s Enterprise`,
+          domain: roleData.domain || roleData.industry || roleData.sector || "HEALTH_TECH",
+          website: roleData.companyWebsite || roleData.website || null,
+          city: parsedCity || "Bengaluru",
+          state: parsedState || "Karnataka",
+          description: roleData.companyDescription || roleData.description || null,
+          contactPerson: roleData.contactPersonName || roleData.contactPerson || `${firstName} ${lastName}`.trim(),
+          contactDesignation: roleData.contactPersonDesignation || roleData.contactDesignation || null,
           size: roleData.size || "ENTERPRISE",
-          isVerified: false,
+          isVerified: true,
         },
       });
-    } else if (role === "INSTITUTION") {
+    } else if (normalizedRole === "INSTITUTION") {
       await prisma.institutionProfile.create({
         data: {
           userId: user.id,
           name: roleData.institutionName || `${firstName} University`,
           aisheCode: roleData.aisheCode || `U-${Math.floor(1000 + Math.random() * 9000)}`,
-          type: roleData.type || "STATE_UNIVERSITY",
-          city: roleData.city || "New Delhi",
-          state: roleData.state || "Delhi",
+          type: roleData.institutionType || roleData.type || "STATE_UNIVERSITY",
+          designation: roleData.designation || "Dean / TPO Officer",
+          city: parsedCity || "New Delhi",
+          state: parsedState || "Delhi",
           isVerified: true,
         },
       });
     }
+
+    const companyName = normalizedRole === "INDUSTRY"
+      ? (roleData.companyName || roleData.organizationName || `${firstName}'s Enterprise`)
+      : undefined;
 
     const sessionPayload = {
       id: user.id,
@@ -93,6 +149,7 @@ export async function POST(req: Request) {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role as any,
+      companyName,
     };
 
     const token = signSessionToken(sessionPayload);
@@ -117,3 +174,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

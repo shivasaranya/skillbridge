@@ -32,7 +32,6 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<UserSession | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,26 +51,6 @@ export default function Navbar() {
     setUser(null);
     router.push("/");
     router.refresh();
-  };
-
-  const handleQuickSwitch = async (email: string) => {
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: "password123" }),
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        setUser(data.user);
-        setRoleDropdownOpen(false);
-        const role = data.user.role.toLowerCase();
-        router.push(`/dashboard/${role}`);
-        router.refresh();
-      }
-    } catch (e) {
-      console.error(e);
-    }
   };
 
   const navLinks = [
@@ -125,66 +104,6 @@ export default function Navbar() {
 
         {/* Right Action Items */}
         <div className="flex items-center gap-3">
-
-          {/* Quick Demo Switcher (Instant evaluator role testing) */}
-          <div className="relative">
-            <button
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 shadow-sm hover:bg-amber-100 transition"
-              title="Switch demo role instantly"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-              <span className="hidden lg:inline">Test Role:</span>
-              <span className="capitalize">{user ? user.role.toLowerCase() : "Select"}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-
-            {roleDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl ring-1 ring-black/5 z-50">
-                <div className="px-2 py-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                  1-Click Evaluator Roles
-                </div>
-                <div className="space-y-1">
-                  <button
-                    onClick={() => handleQuickSwitch("aarav.sharma@student.nia.ac.in")}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium"
-                  >
-                    <span>🎓 Student (Aarav Sharma)</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">92% Match</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickSwitch("faculty.mentor@nia.nic.in")}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium"
-                  >
-                    <span>🔬 Faculty Mentor / TPO</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">TPO</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickSwitch("corporate.hr@dabur.com")}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium"
-                  >
-                    <span>🏢 Industry Recruiter (Dabur)</span>
-                    <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">HR Lead</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickSwitch("director@nia.nic.in")}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium"
-                  >
-                    <span>🏛️ Institution Admin (Dean)</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">NAAC A++</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickSwitch("admin@skillbridge.gov.in")}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 font-medium"
-                  >
-                    <span>🛡️ Super Admin</span>
-                    <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded">System</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* User Profile or Login Buttons */}
           {user ? (
             <div className="flex items-center gap-2">

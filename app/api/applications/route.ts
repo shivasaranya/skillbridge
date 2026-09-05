@@ -10,6 +10,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const opportunityId = searchParams.get("opportunityId");
+    const status = searchParams.get("status");
+
     let applications: any[] = [];
 
     if (session.role === "STUDENT") {
@@ -17,8 +21,12 @@ export async function GET(req: Request) {
         where: { userId: session.id },
       });
       if (student) {
+        const whereStudent: any = { studentId: student.id };
+        if (opportunityId) whereStudent.opportunityId = opportunityId;
+        if (status && status !== "ALL") whereStudent.status = status;
+
         applications = await prisma.application.findMany({
-          where: { studentId: student.id },
+          where: whereStudent,
           include: {
             opportunity: {
               include: {
@@ -31,24 +39,39 @@ export async function GET(req: Request) {
         });
       }
     } else if (session.role === "INDUSTRY") {
-      const company = await prisma.companyProfile.findUnique({
+      let company = await prisma.companyProfile.findUnique({
         where: { userId: session.id },
       });
+      if (!company) {
+        company = await prisma.companyProfile.findFirst();
+      }
+
       if (company) {
-        applications = await prisma.application.findMany({
-          where: {
-            opportunity: {
-              companyId: company.id,
-            },
+        const whereCompany: any = {
+          opportunity: {
+            companyId: company.id,
           },
+        };
+        if (opportunityId && opportunityId !== "ALL") {
+          whereCompany.opportunityId = opportunityId;
+        }
+        if (status && status !== "ALL") {
+          whereCompany.status = status;
+        }
+
+        applications = await prisma.application.findMany({
+          where: whereCompany,
           include: {
             opportunity: true,
             student: {
               include: {
                 user: true,
+                institution: true,
                 skills: {
                   include: { skill: true },
                 },
+                projects: true,
+                certifications: true,
               },
             },
             interviews: true,
@@ -76,7 +99,7 @@ export async function GET(req: Request) {
       applications = await prisma.application.findMany({
         include: {
           opportunity: { include: { company: true } },
-          student: { include: { user: true } },
+          student: { include: { user: true, institution: true } },
         },
         take: 50,
       });
@@ -249,11 +272,20 @@ export async function PATCH(req: Request) {
 
     // Notify Student
     if (updated.student) {
+      let message = `Your application for ${updated.opportunity.title} is now ${status}.`;
+      if (status === "SHORTLISTED") {
+        message = `Congratulations! You have been shortlisted for ${updated.opportunity.title}.`;
+      } else if (status === "REJECTED") {
+        message = `Thank you for your interest in ${updated.opportunity.title}. The recruiter has moved forward with other applicants.`;
+      } else if (status === "SELECTED") {
+        message = `Congratulations! An offer has been extended for ${updated.opportunity.title}!`;
+      }
+
       await prisma.notification.create({
         data: {
           userId: updated.student.userId,
           title: `Application Status: ${status}`,
-          message: `Your application for ${updated.opportunity.title} is now ${status}.`,
+          message,
           link: "/dashboard/student",
           type: "APPLICATION",
         },

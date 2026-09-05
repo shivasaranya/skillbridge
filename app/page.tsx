@@ -164,8 +164,144 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. STATS BANNER */}
-      <section className="border-y border-slate-200 bg-white py-8">
+      {/* 2. CHOOSE YOUR DOMAIN ONBOARDING SECTION */}
+      <section id="choose-domain" className="py-16 bg-white border-y border-slate-200/80">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1 text-xs font-semibold text-brand-700 shadow-xs mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-brand-600" />
+              <span>SkillBridge Stakeholder Onboarding</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Welcome to SkillBridge
+            </h2>
+            <p className="mt-2 text-xl font-bold text-brand-600">
+              Choose how you are joining SkillBridge
+            </p>
+            <p className="mt-2 text-sm text-slate-500 max-w-2xl mx-auto">
+              Select your domain to access tailored verification workflows, smart internship matching, corporate MoUs, and specialized dashboards.
+            </p>
+          </div>
+
+          {/* FOUR DOMAIN CARDS IN A SINGLE HORIZONTAL ROW ON DESKTOP */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Student Card */}
+            <Link
+              href="/register?role=student"
+              className="group relative flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl hover:border-brand-500 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+              <div>
+                <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <GraduationCap className="h-7 w-7" />
+                </div>
+                <div className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 mb-2">
+                  Academic Learner
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-brand-600 transition-colors">
+                  Student
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                  Take verified skill assessments, bridge clinical and technical gaps, apply for curated internships, and generate digital college NOCs.
+                </p>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-brand-600">
+                <span>Student Registration</span>
+                <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1.5 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Faculty / Guide Card */}
+            <Link
+              href="/register?role=faculty"
+              className="group relative flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl hover:border-emerald-500 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+              <div>
+                <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <Users className="h-7 w-7" />
+                </div>
+                <div className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 mb-2">
+                  Faculty & Mentors
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  Faculty / Guide
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                  Access corporate FDPs, industrial training sabbaticals, collaborative research grants, and mentor student internship approvals.
+                </p>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-emerald-600">
+                <span>Faculty Registration</span>
+                <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1.5 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Industry Partner Card */}
+            <Link
+              href="/register?role=industry"
+              className="group relative flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl hover:border-purple-500 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+              <div>
+                <div className="h-14 w-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <Building2 className="h-7 w-7" />
+                </div>
+                <div className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 mb-2">
+                  Corporate & R&D
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                  Industry Partner
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                  Post openings, discover candidates pre-ranked by mathematical compatibility %, coordinate interviews, and sign institutional MoUs.
+                </p>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-purple-600">
+                <span>Industry Registration</span>
+                <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1.5 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Institution Admin Card */}
+            <Link
+              href="/register?role=institution"
+              className="group relative flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl hover:border-amber-500 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+              <div>
+                <div className="h-14 w-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-5 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <BarChart3 className="h-7 w-7" />
+                </div>
+                <div className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 mb-2">
+                  Deans & Placement Cells
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                  Institution Admin
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                  Gain real-time campus skill readiness telemetry, monitor placement performance, and track active MoU quota compliance.
+                </p>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-amber-600">
+                <span>Institution Admin Registration</span>
+                <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1.5 transition-transform" />
+              </div>
+            </Link>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. STATS BANNER */}
+      <section className="border-b border-slate-200 bg-slate-50/50 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -188,7 +324,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. FOUR AUDIENCE PILLARS */}
+      {/* 4. FOUR AUDIENCE PILLARS (Entire cards clickable) */}
       <section className="py-20 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
@@ -205,60 +341,80 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
             {/* Student */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                <GraduationCap className="h-6 w-6" />
+            <Link 
+              href="/register?role=student"
+              className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:border-brand-500 hover:-translate-y-1 transition-all cursor-pointer"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                  <GraduationCap className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors">For Students</h3>
+                <p className="text-sm text-slate-600 mt-2 mb-4 leading-relaxed">
+                  Verify skills via assessments, detect gaps, get recommended bridge courses, apply for internships, and showcase a digital portfolio.
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">For Students</h3>
-              <p className="text-sm text-slate-600 mt-2 mb-4">
-                Verify skills via assessments, detect gaps, get recommended bridge courses, apply for internships, and showcase a digital portfolio.
-              </p>
-              <Link href="/dashboard/student" className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
-                Student Dashboard <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+              <div className="text-sm font-semibold text-brand-600 group-hover:text-brand-700 flex items-center gap-1 pt-2 border-t border-slate-100">
+                Register as Student <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
 
             {/* Faculty */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6" />
+            <Link 
+              href="/register?role=faculty"
+              className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:border-emerald-500 hover:-translate-y-1 transition-all cursor-pointer"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                  <Users className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">For Faculty & TPOs</h3>
+                <p className="text-sm text-slate-600 mt-2 mb-4 leading-relaxed">
+                  Access corporate FDPs, industrial training sabbaticals, joint research grants, and endorse student internship NOCs.
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">For Faculty & TPOs</h3>
-              <p className="text-sm text-slate-600 mt-2 mb-4">
-                Access corporate FDPs, industrial training sabbaticals, joint research grants, and endorse student internship NOCs.
-              </p>
-              <Link href="/dashboard/faculty" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                Faculty Portal <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+              <div className="text-sm font-semibold text-emerald-600 group-hover:text-emerald-700 flex items-center gap-1 pt-2 border-t border-slate-100">
+                Register as Faculty <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
 
             {/* Industry */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
-                <Building2 className="h-6 w-6" />
+            <Link 
+              href="/register?role=industry"
+              className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:border-purple-500 hover:-translate-y-1 transition-all cursor-pointer"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                  <Building2 className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-600 transition-colors">For Industry</h3>
+                <p className="text-sm text-slate-600 mt-2 mb-4 leading-relaxed">
+                  Publish openings, specify mandatory skills, discover candidates pre-ranked by compatibility %, and manage interviews seamlessly.
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">For Industry</h3>
-              <p className="text-sm text-slate-600 mt-2 mb-4">
-                Publish openings, specify mandatory skills, discover candidates pre-ranked by compatibility %, and manage interviews seamlessly.
-              </p>
-              <Link href="/dashboard/industry" className="text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                Recruiter Suite <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+              <div className="text-sm font-semibold text-purple-600 group-hover:text-purple-700 flex items-center gap-1 pt-2 border-t border-slate-100">
+                Register as Partner <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
 
             {/* Institution */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
-                <BarChart3 className="h-6 w-6" />
+            <Link 
+              href="/register?role=institution"
+              className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:border-amber-500 hover:-translate-y-1 transition-all cursor-pointer"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                  <BarChart3 className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition-colors">For Institutions</h3>
+                <p className="text-sm text-slate-600 mt-2 mb-4 leading-relaxed">
+                  Gain real-time telemetry on student skill readiness, monitor placement performance, and track active MoU quota compliance.
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">For Institutions</h3>
-              <p className="text-sm text-slate-600 mt-2 mb-4">
-                Gain real-time telemetry on student skill readiness, monitor placement performance, and track active MoU quota compliance.
-              </p>
-              <Link href="/dashboard/institution" className="text-sm font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                Dean / TPO Analytics <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+              <div className="text-sm font-semibold text-amber-600 group-hover:text-amber-700 flex items-center gap-1 pt-2 border-t border-slate-100">
+                Register Institution <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
 
           </div>
 

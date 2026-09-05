@@ -44,6 +44,7 @@ model InstitutionProfile {
   website            String?
   city               String
   state              String
+  designation        String?  // Designation of Institution Admin e.g. Dean / Director / TPO Head
   isVerified         Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -59,6 +60,7 @@ model StudentProfile {
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionId   String?
   institution     InstitutionProfile? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+  collegeName     String?            // College or Institution name entered during onboarding
   department      String             // e.g. 'Dravyaguna Vigyana', 'Biotechnology', 'Computer Science'
   degree          String             // e.g. 'BAMS', 'MD Ayurveda', 'B.Tech'
   graduationYear  Int
@@ -88,6 +90,7 @@ model FacultyProfile {
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   institutionId    String?
   institution      InstitutionProfile? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+  institutionName  String?            // Institution name entered during onboarding
   department       String
   designation      String             // 'Associate Professor', 'Assistant Professor', 'Professor & HOD'
   experienceYears  Int                @default(5)
@@ -101,22 +104,24 @@ model FacultyProfile {
 }
 
 model CompanyProfile {
-  id            String          @id @default(uuid())
-  userId        String          @unique
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName   String
-  cinNumber     String?         @unique
-  gstin         String?
-  domain        String          // 'AYUSH_PHARMA', 'HERBAL_RESEARCH', 'HEALTH_TECH', 'BIOTECH', 'IT_SERVICES'
-  size          String          @default("ENTERPRISE") // 'STARTUP', 'MID_TIER', 'ENTERPRISE'
-  website       String?
-  logoUrl       String?
-  description   String?
-  isVerified    Boolean         @default(true)
-  city          String?
-  state         String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                 String          @id @default(uuid())
+  userId             String          @unique
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName        String
+  cinNumber          String?         @unique
+  gstin              String?
+  domain             String          // 'AYUSH_PHARMA', 'HERBAL_RESEARCH', 'HEALTH_TECH', 'BIOTECH', 'IT_SERVICES'
+  size               String          @default("ENTERPRISE") // 'STARTUP', 'MID_TIER', 'ENTERPRISE'
+  website            String?
+  logoUrl            String?
+  description        String?
+  contactPerson      String?         // Contact Person Name
+  contactDesignation String?         // Contact Person Designation
+  isVerified         Boolean         @default(true)
+  city               String?
+  state              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 
   opportunities Opportunity[]
   collaborations Collaboration[]
@@ -224,6 +229,9 @@ model Opportunity {
   description      String
   responsibilities String?
   eligibility      String?
+  department       String?
+  qualification    String?
+  experience       String?
   minCgpa          Float              @default(6.5)
   stipendOrSalary  String             // e.g. '₹35,000 / month' or '₹8.5 LPA'
   vacancies        Int                @default(2)
