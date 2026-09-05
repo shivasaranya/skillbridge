@@ -51,10 +51,9 @@ export default function Navbar() {
   ];
 
   const dashboardHref =
-    user?.role === "STUDENT"      ? "/student/dashboard"
-    : user?.role === "FACULTY"    ? "/faculty/dashboard"
-    : user?.role === "INDUSTRY"   ? "/industry/dashboard"
-    : user?.role === "ADMIN"      ? "/admin/dashboard"
+    user?.role === "STUDENT"    ? "/student/dashboard"
+    : user?.role === "INDUSTRY" ? "/dashboard/industry"
+    : user?.role === "ADMIN"    ? "/dashboard/admin"
     : "/student/dashboard";
 
   return (

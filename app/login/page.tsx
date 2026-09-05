@@ -103,15 +103,6 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={() => handleQuickLogin("faculty.mentor@nia.nic.in")}
-              className="rounded-lg border border-amber-200 bg-white p-2 text-left font-medium text-slate-800 hover:bg-amber-100/60 transition shadow-xs"
-            >
-              🔬 <span className="font-bold">Faculty / TPO</span>
-              <div className="text-[10px] text-slate-500">Dr. Arvind Tripathi</div>
-            </button>
-
-            <button
-              type="button"
               onClick={() => handleQuickLogin("corporate.hr@dabur.com")}
               className="rounded-lg border border-amber-200 bg-white p-2 text-left font-medium text-slate-800 hover:bg-amber-100/60 transition shadow-xs"
             >

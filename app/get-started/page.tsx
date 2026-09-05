@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  GraduationCap, Building2, BookOpen, ShieldCheck,
+  GraduationCap, Building2, ShieldCheck,
   ArrowRight, CheckCircle2, ChevronRight, Sparkles,
 } from "lucide-react";
 
@@ -25,23 +25,6 @@ const ROLES = [
     href: "/register",
     cta: "Register as Student",
     accent: "text-blue-600",
-  },
-  {
-    id: "FACULTY",
-    icon: BookOpen,
-    label: "Faculty / TPO",
-    tagline: "Mentor the next generation",
-    desc: "Map your institution's skills, manage student placements, create bridge courses, and collaborate with industry partners.",
-    features: ["Batch Skill Overview", "Placement Management", "Industry MoUs", "Bridge Courses"],
-    gradient: "from-emerald-500 to-teal-500",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    activeBg: "bg-emerald-600",
-    activeText: "text-white",
-    badgeBg: "bg-emerald-100 text-emerald-700",
-    href: "/register?role=FACULTY",
-    cta: "Register as Faculty",
-    accent: "text-emerald-600",
   },
   {
     id: "INDUSTRY",

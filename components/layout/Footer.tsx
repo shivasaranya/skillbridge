@@ -47,10 +47,9 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3">Governance</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/dashboard/institution" className="hover:text-brand-600 transition">TPO Dashboard</Link></li>
+              <li><Link href="/dashboard/institution" className="hover:text-brand-600 transition">Institution Dashboard</Link></li>
               <li><Link href="/dashboard/institution" className="hover:text-brand-600 transition">Skill Gap Telemetry</Link></li>
-              <li><Link href="/dashboard/faculty" className="hover:text-brand-600 transition">Faculty Immersion</Link></li>
-              <li><Link href="/dashboard/admin" className="hover:text-brand-600 transition">Compliance & Audits</Link></li>
+              <li><Link href="/dashboard/admin" className="hover:text-brand-600 transition">Compliance &amp; Audits</Link></li>
             </ul>
           </div>
 

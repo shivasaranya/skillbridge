@@ -218,20 +218,6 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Faculty */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-              <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">For Faculty & TPOs</h3>
-              <p className="text-sm text-slate-600 mt-2 mb-4">
-                Access corporate FDPs, industrial training sabbaticals, joint research grants, and endorse student internship NOCs.
-              </p>
-              <Link href="/get-started" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                Join as Faculty <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-
             {/* Industry */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition">
               <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
