@@ -181,18 +181,30 @@ model Skill {
 }
 
 model StudentSkill {
-  id                 String         @id @default(uuid())
-  studentId          String
-  student            StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  skillId            String
-  skill              Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  proficiencyLevel   String         @default("BEGINNER") // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'
-  proficiencyScore   Int            @default(60) // 1-100
-  verificationLevel  String         @default("SELF_DECLARED")
+  id                  String         @id @default(uuid())
+  studentId           String
+  student             StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillId             String
+  skill               Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  proficiencyLevel    String         @default("BEGINNER") // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'
+  proficiencyScore    Int            @default(60) // 1-100
+  verificationLevel   String         @default("SELF_DECLARED")
   // 'SELF_DECLARED', 'ASSESSMENT_VERIFIED', 'PROJECT_VERIFIED', 'CERTIFICATION_VERIFIED', 'INDUSTRY_VERIFIED'
-  verificationSource String         @default("SELF_REPORTED") // legacy
-  verifiedAt         DateTime?
-  updatedAt          DateTime       @updatedAt
+  verificationSource  String         @default("SELF_REPORTED") // legacy
+
+  // Certificate-based verification (new)
+  verificationStatus  String         @default("PENDING")
+  // 'PENDING' | 'VERIFIED' | 'REJECTED'
+  certificateName     String?
+  certificateFile     String?        // relative path: /uploads/certificates/<studentId>/<filename>
+  issuingOrganization String?
+  issueDate           String?
+  certificateId       String?        // Credential / Certificate ID
+  credentialUrl       String?
+  rejectionReason     String?
+  uploadedAt          DateTime?
+  verifiedAt          DateTime?
+  updatedAt           DateTime       @updatedAt
 
   @@unique([studentId, skillId])
 }

@@ -3,25 +3,32 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  User, Edit3, Save, X, Plus, Trash2, Github, Linkedin,
+  User, Edit3, Save, X, Trash2, Github, Linkedin,
   Globe, Award, Layers, FolderGit2, CheckCircle2, AlertCircle,
-  Loader2, ExternalLink, Star, Shield, Code, Calendar
+  Loader2, ExternalLink, Star, Shield, Code, Calendar, Clock, Eye, Plus
 } from "lucide-react";
 
 const PROFICIENCY_LEVELS = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"];
+
+// Certificate verification status config
+const VSTATUS_COLORS: Record<string, string> = {
+  PENDING:  "bg-amber-50 text-amber-700 border-amber-200",
+  VERIFIED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  REJECTED: "bg-red-50 text-red-700 border-red-200",
+};
+const VSTATUS_LABEL: Record<string, string> = {
+  PENDING:  "⏳ Verification Pending",
+  VERIFIED: "✓ Verified",
+  REJECTED: "✗ Certificate Rejected",
+};
+
+// Legacy fallback (existing assessment-verified skills)
 const VERIFICATION_COLORS: Record<string, string> = {
   SELF_DECLARED: "bg-slate-100 text-slate-500 border-slate-200",
   ASSESSMENT_VERIFIED: "bg-blue-50 text-blue-700 border-blue-200",
   PROJECT_VERIFIED: "bg-purple-50 text-purple-700 border-purple-200",
   CERTIFICATION_VERIFIED: "bg-emerald-50 text-emerald-700 border-emerald-200",
   INDUSTRY_VERIFIED: "bg-amber-50 text-amber-700 border-amber-200",
-};
-const VERIFICATION_LABEL: Record<string, string> = {
-  SELF_DECLARED: "Self Declared",
-  ASSESSMENT_VERIFIED: "✓ Assessment",
-  PROJECT_VERIFIED: "◆ Project",
-  CERTIFICATION_VERIFIED: "★ Certification",
-  INDUSTRY_VERIFIED: "✦ Industry",
 };
 
 type Tab = "overview" | "skills" | "certifications" | "achievements" | "projects";
@@ -38,10 +45,8 @@ export default function StudentProfilePage() {
   // Edit state for overview
   const [form, setForm] = useState<Record<string, string>>({});
 
-  // New skill state
-  const [newSkillName, setNewSkillName] = useState("");
-  const [newSkillLevel, setNewSkillLevel] = useState("INTERMEDIATE");
-  const [addingSkill, setAddingSkill] = useState(false);
+  // Certificate preview
+  const [certPreviewUrl, setCertPreviewUrl] = useState<string | null>(null);
 
   // New cert state
   const [showCertForm, setShowCertForm] = useState(false);
@@ -89,27 +94,6 @@ export default function StudentProfilePage() {
       setError("Failed to save. Please try again.");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const addSkill = async () => {
-    if (!newSkillName.trim()) return;
-    setAddingSkill(true);
-    try {
-      const res = await fetch("/api/student/skills", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skillName: newSkillName.trim(), proficiencyLevel: newSkillLevel }),
-      });
-      if (res.ok) {
-        setNewSkillName("");
-        setNewSkillLevel("INTERMEDIATE");
-        loadProfile();
-        setSuccess("Skill added!");
-        setTimeout(() => setSuccess(""), 2000);
-      }
-    } finally {
-      setAddingSkill(false);
     }
   };
 
@@ -361,24 +345,33 @@ export default function StudentProfilePage() {
       {/* ── SKILLS TAB ── */}
       {activeTab === "skills" && (
         <div className="space-y-5">
-          {/* Add Skill */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 mb-3">Add a Skill</h3>
-            <div className="flex gap-3 flex-wrap">
-              <input type="text" value={newSkillName} onChange={e => setNewSkillName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addSkill()}
-                placeholder="e.g. React, Python, Docker…"
-                className="flex-1 min-w-[180px] px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
-              <select value={newSkillLevel} onChange={e => setNewSkillLevel(e.target.value)}
-                className="px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white">
-                {PROFICIENCY_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <button onClick={addSkill} disabled={addingSkill || !newSkillName.trim()}
-                className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition">
-                {addingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add
-              </button>
+          {/* Certificate preview overlay */}
+          {certPreviewUrl && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setCertPreviewUrl(null)}>
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ width: "min(90vw,860px)", height: "min(90vh,640px)" }} onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+                  <span className="text-sm font-bold text-slate-800">Certificate Preview</span>
+                  <button onClick={() => setCertPreviewUrl(null)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"><X size={16} /></button>
+                </div>
+                <div className="flex-1 overflow-hidden bg-slate-50">
+                  {certPreviewUrl.endsWith(".pdf")
+                    ? <iframe src={certPreviewUrl} className="w-full h-full border-0" title="Certificate" />
+                    : <div className="w-full h-full flex items-center justify-center p-4"><img src={certPreviewUrl} alt="Certificate" className="max-w-full max-h-full object-contain rounded-xl shadow" /></div>}
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-2">Tip: Verify your skills through assessments or link them to projects to increase recruiter trust.</p>
+          )}
+
+          {/* Add Skill CTA → dedicated page */}
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-bold text-slate-900 flex items-center gap-2"><Shield size={15} className="text-blue-600" /> Certificate-Based Skill Verification</div>
+              <p className="text-xs text-slate-500 mt-1">Upload certificates to get your skills verified — recruiters trust verified skills 3× more.</p>
+            </div>
+            <Link href="/student/skills"
+              className="shrink-0 flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+              <Plus size={14} /> Add &amp; Verify Skill
+            </Link>
           </div>
 
           {/* Skills List */}
@@ -386,27 +379,36 @@ export default function StudentProfilePage() {
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
               <Layers size={36} className="text-slate-300 mx-auto mb-2" />
               <p className="text-sm text-slate-500 font-medium">No skills added yet.</p>
-              <p className="text-xs text-slate-400 mt-1">Add skills above to build your skill passport.</p>
+              <p className="text-xs text-slate-400 mt-1">Go to <Link href="/student/skills" className="text-blue-600 font-semibold hover:underline">Skill Passport</Link> to add and verify skills.</p>
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {skills.map((ss: any) => (
-                  <div key={ss.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-900 truncate">{ss.skill?.name}</div>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">{ss.proficiencyLevel}</span>
-                        <span className={`text-[10px] font-semibold border px-2 py-0.5 rounded-full ${VERIFICATION_COLORS[ss.verificationLevel] || ""}`}>
-                          {VERIFICATION_LABEL[ss.verificationLevel] || ss.verificationLevel}
-                        </span>
+                {skills.map((ss: any) => {
+                  const vstatus = ss.verificationStatus || "PENDING";
+                  const vcolor  = VSTATUS_COLORS[vstatus] || VSTATUS_COLORS.PENDING;
+                  const vlabel  = VSTATUS_LABEL[vstatus]  || vstatus;
+                  return (
+                    <div key={ss.id} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-slate-900 truncate">{ss.skill?.name}</div>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">{ss.proficiencyLevel.charAt(0) + ss.proficiencyLevel.slice(1).toLowerCase()}</span>
+                          <span className={`text-[10px] font-semibold border px-2 py-0.5 rounded-full ${vcolor}`}>{vlabel}</span>
+                        </div>
+                        {ss.certificateFile && (
+                          <button onClick={() => setCertPreviewUrl(ss.certificateFile)}
+                            className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-blue-600 hover:underline">
+                            <Eye size={10} /> View Certificate
+                          </button>
+                        )}
                       </div>
+                      <button onClick={() => removeSkill(ss.skillId)} className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
+                        <Trash2 size={13} />
+                      </button>
                     </div>
-                    <button onClick={() => removeSkill(ss.skillId)} className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

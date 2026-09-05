@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/student/skills — add or update a skill
+// POST /api/student/skills — add or update a skill (certificate required)
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
@@ -38,10 +38,28 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { skillId, skillName, categoryId, proficiencyLevel, verificationLevel } = body;
+    const {
+      skillId,
+      skillName,
+      categoryId,
+      proficiencyLevel,
+      certificateName,
+      certificateFile,
+      issuingOrganization,
+      issueDate,
+      certificateId,
+      credentialUrl,
+    } = body;
 
     if (!proficiencyLevel) {
       return NextResponse.json({ error: "proficiencyLevel is required" }, { status: 400 });
+    }
+
+    if (!certificateFile) {
+      return NextResponse.json(
+        { error: "Certificate required. Please upload valid proof of your skill." },
+        { status: 400 }
+      );
     }
 
     const student = await prisma.studentProfile.findUnique({
@@ -50,7 +68,6 @@ export async function POST(req: NextRequest) {
     });
     if (!student) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 
-    // Score mapping
     const scoreMap: Record<string, number> = {
       BEGINNER: 40,
       INTERMEDIATE: 65,
@@ -60,13 +77,11 @@ export async function POST(req: NextRequest) {
 
     let resolvedSkillId = skillId;
 
-    // If no skillId, try to find or create by name
     if (!resolvedSkillId && skillName) {
       let existingSkill = await prisma.skill.findFirst({
         where: { name: { equals: skillName } },
       });
       if (!existingSkill) {
-        // Use provided categoryId or default to 1
         const catId = categoryId || 1;
         existingSkill = await prisma.skill.create({
           data: {
@@ -90,13 +105,29 @@ export async function POST(req: NextRequest) {
         skillId: resolvedSkillId,
         proficiencyLevel,
         proficiencyScore: scoreMap[proficiencyLevel] || 60,
-        verificationLevel: verificationLevel || "SELF_DECLARED",
+        verificationLevel: "SELF_DECLARED",
         verificationSource: "SELF_REPORTED",
+        verificationStatus: "PENDING",
+        certificateName: certificateName || null,
+        certificateFile: certificateFile,
+        issuingOrganization: issuingOrganization || null,
+        issueDate: issueDate || null,
+        certificateId: certificateId || null,
+        credentialUrl: credentialUrl || null,
+        uploadedAt: new Date(),
       },
       update: {
         proficiencyLevel,
         proficiencyScore: scoreMap[proficiencyLevel] || 60,
-        ...(verificationLevel && { verificationLevel }),
+        verificationStatus: "PENDING",
+        certificateName: certificateName || null,
+        certificateFile: certificateFile,
+        issuingOrganization: issuingOrganization || null,
+        issueDate: issueDate || null,
+        certificateId: certificateId || null,
+        credentialUrl: credentialUrl || null,
+        uploadedAt: new Date(),
+        rejectionReason: null,
       },
       include: { skill: { include: { category: true } } },
     });
