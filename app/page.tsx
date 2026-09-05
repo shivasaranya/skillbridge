@@ -45,19 +45,19 @@ export default function HomePage() {
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
                 <Link
-                  href="/internships"
+                  href="/get-started"
                   className="flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-500/25 hover:bg-brand-700 transition"
                 >
-                  <Briefcase className="h-4 w-4" />
-                  Explore Opportunities
+                  Get Started Free
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
 
                 <Link
-                  href="/register"
+                  href="/internships"
                   className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition"
                 >
-                  Get Started Free
-                  <ArrowRight className="h-4 w-4 text-slate-500" />
+                  <Briefcase className="h-4 w-4 text-slate-500" />
+                  Explore Opportunities
                 </Link>
               </div>
 
@@ -213,8 +213,8 @@ export default function HomePage() {
               <p className="text-sm text-slate-600 mt-2 mb-4">
                 Verify skills via assessments, detect gaps, get recommended bridge courses, apply for internships, and showcase a digital portfolio.
               </p>
-              <Link href="/dashboard/student" className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
-                Student Dashboard <ArrowRight className="h-3.5 w-3.5" />
+              <Link href="/get-started" className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                Join as Student <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
@@ -227,8 +227,8 @@ export default function HomePage() {
               <p className="text-sm text-slate-600 mt-2 mb-4">
                 Access corporate FDPs, industrial training sabbaticals, joint research grants, and endorse student internship NOCs.
               </p>
-              <Link href="/dashboard/faculty" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                Faculty Portal <ArrowRight className="h-3.5 w-3.5" />
+              <Link href="/get-started" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                Join as Faculty <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
@@ -241,8 +241,8 @@ export default function HomePage() {
               <p className="text-sm text-slate-600 mt-2 mb-4">
                 Publish openings, specify mandatory skills, discover candidates pre-ranked by compatibility %, and manage interviews seamlessly.
               </p>
-              <Link href="/dashboard/industry" className="text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                Recruiter Suite <ArrowRight className="h-3.5 w-3.5" />
+              <Link href="/get-started" className="text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
+                Join as Recruiter <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
@@ -255,11 +255,26 @@ export default function HomePage() {
               <p className="text-sm text-slate-600 mt-2 mb-4">
                 Gain real-time telemetry on student skill readiness, monitor placement performance, and track active MoU quota compliance.
               </p>
-              <Link href="/dashboard/institution" className="text-sm font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                Dean / TPO Analytics <ArrowRight className="h-3.5 w-3.5" />
+              <Link href="/get-started" className="text-sm font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1">
+                Join as Institution <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
+          </div>
+
+          {/* Role selection CTA */}
+          <div className="mt-14 rounded-2xl bg-gradient-to-r from-brand-600 to-cyan-600 p-8 text-center text-white shadow-xl">
+            <h3 className="text-2xl font-extrabold mb-2">Ready to get started?</h3>
+            <p className="text-brand-100 text-sm mb-6 max-w-xl mx-auto">
+              Choose your role and join thousands of students, institutions, and companies already using SkillBridge.
+            </p>
+            <Link
+              href="/get-started"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-bold text-brand-700 hover:bg-brand-50 transition shadow-lg"
+            >
+              Choose Your Role
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
         </div>
