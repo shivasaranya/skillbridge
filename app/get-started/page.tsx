@@ -39,7 +39,7 @@ const ROLES = [
     activeBg: "bg-purple-600",
     activeText: "text-white",
     badgeBg: "bg-purple-100 text-purple-700",
-    href: "/register?role=INDUSTRY",
+    href: "/register/industry",
     cta: "Register as Recruiter",
     accent: "text-purple-600",
   },
