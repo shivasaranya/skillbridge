@@ -131,3 +131,60 @@ export function getScoreBadgeColor(score: number): string {
   if (score >= 40) return "bg-amber-100 text-amber-700 border-amber-200";
   return "bg-slate-100 text-slate-500 border-slate-200";
 }
+
+// -------------------------------------------------------
+// calculateSkillMatch — used by /api/applications route
+// -------------------------------------------------------
+export interface CandidateSkill {
+  skillId: string;
+  name: string;
+  proficiencyLevel?: string;
+  score?: number;
+}
+
+export interface RequiredSkill {
+  skillId: string;
+  name: string;
+  criticality?: string;
+  weightage?: number;
+}
+
+export interface SkillMatchAnalysis {
+  matchPercentage: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  mandatoryMet: boolean;
+}
+
+export function calculateSkillMatch(
+  candidateSkills: CandidateSkill[],
+  requiredSkills: RequiredSkill[]
+): SkillMatchAnalysis {
+  if (!requiredSkills.length) {
+    return { matchPercentage: 75, matchedSkills: [], missingSkills: [], mandatoryMet: true };
+  }
+
+  const candidateIds = new Set(candidateSkills.map((s) => s.skillId));
+  const candidateNames = candidateSkills.map((s) => s.name.toLowerCase().trim());
+
+  const matched: string[] = [];
+  const missing: string[] = [];
+  let mandatoryMet = true;
+
+  for (const req of requiredSkills) {
+    const idMatch = candidateIds.has(req.skillId);
+    const nameMatch = candidateNames.some(
+      (cn) => cn.includes(req.name.toLowerCase().trim()) || req.name.toLowerCase().trim().includes(cn)
+    );
+    if (idMatch || nameMatch) {
+      matched.push(req.name);
+    } else {
+      missing.push(req.name);
+      if (req.criticality === "MANDATORY") mandatoryMet = false;
+    }
+  }
+
+  const matchPercentage = Math.round((matched.length / requiredSkills.length) * 100);
+  return { matchPercentage, matchedSkills: matched, missingSkills: missing, mandatoryMet };
+}
+

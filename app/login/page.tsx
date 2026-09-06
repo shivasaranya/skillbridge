@@ -31,7 +31,14 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(`/dashboard/${data.user.role.toLowerCase()}`);
+      const role: string = data.user.role;
+      const destination =
+        role === "STUDENT"  ? "/student/dashboard" :
+        role === "INDUSTRY" ? "/industry/dashboard" :
+        role === "ADMIN"    ? "/dashboard/admin" :
+        role === "INSTITUTION" ? "/dashboard/institution" :
+        `/dashboard/${role.toLowerCase()}`;
+      router.push(destination);
       router.refresh();
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -59,7 +66,14 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(`/dashboard/${data.user.role.toLowerCase()}`);
+      const role: string = data.user.role;
+      const destination =
+        role === "STUDENT"  ? "/student/dashboard" :
+        role === "INDUSTRY" ? "/industry/dashboard" :
+        role === "ADMIN"    ? "/dashboard/admin" :
+        role === "INSTITUTION" ? "/dashboard/institution" :
+        `/dashboard/${role.toLowerCase()}`;
+      router.push(destination);
       router.refresh();
     } catch (err) {
       setError("Quick login failed.");
